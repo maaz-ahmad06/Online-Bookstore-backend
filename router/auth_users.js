@@ -6,12 +6,12 @@ const regd_users = express.Router();
 let users = [];
 
 const isValid = (username) => {
-    // Check if username is non-empty and doesn't already exist
+    // Check if username already exists in users array
     let userswithsamename = users.filter((user) => {
         return user.username === username;
     });
     return userswithsamename.length > 0;
-}
+};
 
 const authenticatedUser = (username, password) => {
     // Check if username and password match recorded records
@@ -19,9 +19,11 @@ const authenticatedUser = (username, password) => {
         return (user.username === username && user.password === password);
     });
     return validusers.length > 0;
-}
+};
 
-// Task 8: Only registered users can login
+/**
+ * Task 8: Only registered users can login
+ */
 regd_users.post("/login", (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
@@ -43,16 +45,15 @@ regd_users.post("/login", (req, res) => {
             username
         };
 
-        return res.status(200).json({
-            message: "Customer successfully logged in",
-            token: accessToken
-        });
+        return res.status(200).send("Login successful!");
     } else {
         return res.status(208).json({ message: "Invalid Login. Check username and password" });
     }
 });
 
-// Task 9: Add or modify a book review
+/**
+ * Task 9: Add or modify a book review
+ */
 regd_users.put("/auth/review/:isbn", (req, res) => {
     const isbn = req.params.isbn;
     const review = req.query.review || req.body.review;
@@ -68,16 +69,15 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
 
     if (books[isbn]) {
         books[isbn].reviews[username] = review;
-        return res.status(200).json({
-            message: `The review for the book with ISBN ${isbn} has been added/updated.`,
-            reviews: books[isbn].reviews
-        });
+        return res.status(200).send(`The review for the book with ISBN ${isbn} has been added/updated.`);
     } else {
         return res.status(404).json({ message: `Book with ISBN ${isbn} not found` });
     }
 });
 
-// Task 10: Delete a book review
+/**
+ * Task 10: Delete a book review
+ */
 regd_users.delete("/auth/review/:isbn", (req, res) => {
     const isbn = req.params.isbn;
     const username = req.session.authorization ? req.session.authorization['username'] : (req.user ? req.user.username : null);
@@ -89,10 +89,7 @@ regd_users.delete("/auth/review/:isbn", (req, res) => {
     if (books[isbn]) {
         if (books[isbn].reviews[username]) {
             delete books[isbn].reviews[username];
-            return res.status(200).json({
-                message: `Reviews for the ISBN ${isbn} posted by the user ${username} deleted.`,
-                reviews: books[isbn].reviews
-            });
+            return res.status(200).send(`Reviews for the ISBN ${isbn} posted by the user ${username} deleted.`);
         } else {
             return res.status(404).json({ message: `No review found for user ${username} on ISBN ${isbn}` });
         }
